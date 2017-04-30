@@ -40,6 +40,7 @@ export class AwsService {
             ACL: "public-read", // to allow public access to the file
             Bucket: this._bucket_name, //bucket name
             Key: file_prefix + "-" + Date.now() + ".csv", //file name
+            //ContentType: "application/json" //(String) A standard MIME type describing the format of the object data
         }
 
         s3.upload(params, (err, data) => {
