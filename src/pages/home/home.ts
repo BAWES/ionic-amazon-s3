@@ -7,6 +7,9 @@ import { NavController } from 'ionic-angular';
 })
 export class HomePage {
 
+  public AWS_IAM_USER = "app_public";
+  public BUCKET_NAME = "123";
+
   constructor(public navCtrl: NavController) {
 
   }
