@@ -28,6 +28,10 @@ export class HomePage {
     if(fileList.length > 0){
       let file: File = fileList.item(0);
       console.log(file.name);
+
+      this._aws.uploadFile("test_", file, () => {
+        console.log("Callback executed");
+      });
     }
     
   }

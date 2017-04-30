@@ -8,7 +8,7 @@ export class AwsService {
     //private _user = "app_public";
     private _access_key_id = "AKIAI5ZFAKH7R3WIHWXQ";
     private _secret_access_key = "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";
-    private _bucket_name = "app_public";
+    private _bucket_name = "bawes-public";
 
     constructor(){
         this.initAwsService();
@@ -26,30 +26,44 @@ export class AwsService {
     /**
      * Upload file to Amazon S3
      * @param  {string} file_prefix
-     * @param  {string} data
+     * @param  {File} file
      * @param  {any} callback
      * @returns void
      */
-    uploadFile(file_prefix: string, data: string, callback: any): void {
+    uploadFile(file_prefix: string, file: File, callback: any): void {
         let s3 = new AWS.S3({
             apiVersion: '2006-03-01'
         });
 
         let params = {
-            Body: data, // the actual file data
+            Body: file, // the actual file file
             ACL: "public-read", // to allow public access to the file
             Bucket: this._bucket_name, //bucket name
-            Key: file_prefix + "-" + Date.now() + ".csv", //file name
-            //ContentType: "application/json" //(String) A standard MIME type describing the format of the object data
+            Key: file_prefix + "-" + Date.now() + "." + this._getFileExtension(file.name), //file name
+            ContentType: file.type //(String) A standard MIME type describing the format of the object file
         }
 
-        s3.upload(params, (err, data) => {
+        s3.upload(params, (err, file) => {
             if(err) console.log("S3 upload error", err);
             else {
                 console.log("S3 upload complete");
                 callback();
             }
         });
+    }
+
+    /**
+     * Take file name / path and return the file extension.
+     */
+    private _getFileExtension(path) {
+        var basename = path.split(/[\\/]/).pop(),  // extract file name from full path ...
+                                                // (supports `\\` and `/` separators)
+            pos = basename.lastIndexOf(".");       // get last position of `.`
+
+        if (basename === "" || pos < 1)            // if file name is empty or ...
+            return "";                             //  `.` not found (-1) or comes first (0)
+
+        return basename.slice(pos + 1);            // extract extension ignoring `.`
     }
 
 }
