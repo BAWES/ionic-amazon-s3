@@ -29,7 +29,7 @@ export class HomePage {
       let file: File = fileList.item(0);
       console.log(file.name);
 
-      this._aws.uploadFile("test_", file, () => {
+      this._aws.uploadFile("test", file, () => {
         console.log("Callback executed");
       });
     }
