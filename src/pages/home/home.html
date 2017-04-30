@@ -7,14 +7,29 @@
 </ion-header>
 
 <ion-content padding>
-  Goal #1: Allow user to upload a file from device or camera<br/>
-  Goal #2: Make it functional via browser
+  <h5>TODO</h5>
+  <ul>
+    <li>Test functionality on iOS and Android + Browser</li>
+    <li>Show upload progress</li>
+  </ul>
+
+  <hr/>
 
   <ion-list>
     <ion-item>
       <input type='file' (change)="uploadFile($event)"/>
     </ion-item>
   </ion-list>
+
+  <div *ngIf="uploadedFileData">
+    <b>Key</b><br/>
+    {{ uploadedFileData.Key }}
+    <br/><br/>
+    <b>Location</b><br/>
+    <a href='{{ uploadedFileData.Location }}'>
+      {{ uploadedFileData.Location }}
+    </a>
+  </div>
 
   
 </ion-content>
