@@ -1,11 +1,11 @@
 import { Injectable } from "@angular/core";
+import { Observable, Observer } from 'rxjs/rx';
 
 declare var AWS;
 
 @Injectable()
 export class AwsService {
     private _region = "eu-west-2"; //London
-    //private _user = "app_public";
     private _access_key_id = "AKIAI5ZFAKH7R3WIHWXQ";
     private _secret_access_key = "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";
     private _bucket_name = "bawes-public";
@@ -24,13 +24,13 @@ export class AwsService {
     }
 
     /**
-     * Upload file to Amazon S3
+     * Upload file to Amazon S3, return an observable to monitor progress
      * @param  {string} file_prefix
      * @param  {File} file
      * @param  {any} callback
-     * @returns void
+     * @returns {Observable<any>}
      */
-    uploadFile(file_prefix: string, file: File, callback: any): void {
+    uploadFile(file_prefix: string, file: File): Observable<any> {
         let s3 = new AWS.S3({
             apiVersion: '2006-03-01'
         });
@@ -43,15 +43,18 @@ export class AwsService {
             ContentType: file.type //(String) A standard MIME type describing the format of the object file
         }
 
-        s3.upload(params).on('httpUploadProgress', (progress) => {
-                console.log(progress);
+        return Observable.create((observer: Observer<any>) => {
+            s3.upload(params).on('httpUploadProgress', (progress: ProgressEvent) => {
+                observer.next(progress);
             }).send((err, data) => {
-                if(err) console.log("S3 upload error", err);
-                else {
-                    console.log("S3 upload complete");
-                    callback(data);
+                if(err) {
+                    observer.error(err);
+                }else {
+                    observer.next(data);
+                    observer.complete();
                 }
             });
+        });
     }
 
     /**

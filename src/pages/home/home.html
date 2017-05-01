@@ -21,15 +21,20 @@
     </ion-item>
   </ion-list>
 
-  <div *ngIf="uploadedFileData">
-    <b>Key</b><br/>
-    {{ uploadedFileData.Key }}
-    <br/><br/>
-    <b>Location</b><br/>
-    <a href='{{ uploadedFileData.Location }}'>
-      {{ uploadedFileData.Location }}
-    </a>
-  </div>
+  <ion-list>
+    <ion-item *ngFor="let upload of uploads">
+      {{ upload.name }} <br/>
+      {{ upload.status }} <br/>
+      <p *ngIf="upload.status != 'complete'">
+        %{{ (upload.loaded / upload.total * 100).toFixed(1) }}
+      </p>
+      <div *ngIf="upload.status != 'complete'" class='loader' 
+        [style.width]="(upload.loaded / upload.total * 100).toFixed(1) + '%'"
+        style='width: 0%; border-top:3px solid blue;'>
+        &nbsp;
+      </div>
+    </ion-item>
+  </ion-list>
 
   
 </ion-content>
