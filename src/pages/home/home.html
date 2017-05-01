@@ -33,6 +33,11 @@
         style='width: 0%; border-top:3px solid blue;'>
         &nbsp;
       </div>
+      <p *ngIf="upload.status == 'complete'">
+        <a href='{{ upload.link }}' target='_blank'>
+          {{ upload.link }}
+        </a>
+      </p>
     </ion-item>
   </ion-list>
 

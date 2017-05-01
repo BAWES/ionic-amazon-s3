@@ -32,7 +32,8 @@ export class HomePage {
         name: file.name,
         status: "uploading",
         loaded: 0,
-        total: file.size
+        total: file.size,
+        link: ''
       };
       this.uploads.push(newUpload);
 
@@ -42,6 +43,7 @@ export class HomePage {
           newUpload.loaded = progress.loaded;
           newUpload.total = progress.total;
           newUpload.name = progress.key;
+          newUpload.link = this.bucketUrl + newUpload.name;
         }, err => {
           console.log("Error", err);
           newUpload.status = "error";
