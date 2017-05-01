@@ -38,17 +38,17 @@ export class HomePage {
       this.uploads.push(newUpload);
 
       this._aws.uploadFile("filepref", file).subscribe((progress) => {
-          console.log(progress);
+          //console.log(progress);
           newUpload.status = "uploading";
           newUpload.loaded = progress.loaded;
           newUpload.total = progress.total;
           newUpload.name = progress.key;
           newUpload.link = this.bucketUrl + newUpload.name;
         }, err => {
-          console.log("Error", err);
+          //console.log("Error", err);
           newUpload.status = "error";
         }, () => {
-          console.log("Done uploading? Completed");
+          //console.log("Done uploading? Completed");
           newUpload.status = "complete";
         });
     }

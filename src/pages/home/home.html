@@ -25,7 +25,7 @@
       {{ upload.name }} <br/>
       {{ upload.status }} <br/>
       <p *ngIf="upload.status != 'complete'">
-        %{{ (upload.loaded / upload.total * 100).toFixed(1) }}
+        {{ (upload.loaded / upload.total * 100).toFixed(1) }}%
       </p>
       <div *ngIf="upload.status != 'complete'" class='loader' 
         [style.width]="(upload.loaded / upload.total * 100).toFixed(1) + '%'"
