@@ -43,8 +43,11 @@ export class AwsService {
             ContentType: file.type //(String) A standard MIME type describing the format of the object file
         }
 
+        console.log(params);
+
         return Observable.create((observer: Observer<any>) => {
             s3.upload(params).on('httpUploadProgress', (progress: ProgressEvent) => {
+                // console.log(progress);
                 observer.next(progress);
             }).send((err, data) => {
                 if(err) {

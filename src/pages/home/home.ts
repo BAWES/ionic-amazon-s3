@@ -42,7 +42,7 @@ export class HomePage {
           newUpload.status = "uploading";
           newUpload.loaded = progress.loaded;
           newUpload.total = progress.total;
-          newUpload.name = progress.key;
+          newUpload.name = progress.key? progress.key : progress.Key; // If Multipart upload (big file), Key with capital "K"
           newUpload.link = this.bucketUrl + newUpload.name;
         }, err => {
           //console.log("Error", err);
