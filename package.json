@@ -19,7 +19,8 @@
     "@angular/http": "4.0.2",
     "@angular/platform-browser": "4.0.2",
     "@angular/platform-browser-dynamic": "4.0.2",
-    "@ionic-native/core": "3.4.2",
+    "@ionic-native/core": "^3.6.1",
+    "@ionic-native/camera": "^3.6.1",
     "@ionic-native/splash-screen": "3.4.2",
     "@ionic-native/status-bar": "3.4.2",
     "@ionic/storage": "2.0.1",
@@ -39,7 +40,9 @@
     "cordova-plugin-console",
     "cordova-plugin-statusbar",
     "cordova-plugin-device",
-    "cordova-plugin-splashscreen"
+    "cordova-plugin-splashscreen",
+    "cordova-plugin-camera",
+    "cordova-plugin-compat"
   ],
   "cordovaPlatforms": [
     "ios",
@@ -47,6 +50,11 @@
       "platform": "ios",
       "version": "",
       "locator": "ios"
+    },
+    {
+      "platform": "android",
+      "version": "",
+      "locator": "android"
     }
   ],
   "description": "ionic-amazon-s3: An Ionic project"

@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { Component, Renderer, ElementRef, ViewChild } from '@angular/core';
+import { NavController, Platform } from 'ionic-angular';
+
+import { Camera, CameraOptions } from '@ionic-native/camera';
 
 import { AwsService } from '../../providers/aws.service'
 
@@ -8,20 +10,58 @@ import { AwsService } from '../../providers/aws.service'
   templateUrl: 'home.html'
 })
 export class HomePage {
+  @ViewChild('fileInput') fileInput:ElementRef;
 
-  public bucketUrl = "https://bawes-public.s3.eu-west-2.amazonaws.com/"; //filepref-1493644650543.png
+  public bucketUrl = "https://bawes-public.s3.eu-west-2.amazonaws.com/";
 
   public uploads = [];
 
   constructor(
     public navCtrl: NavController,
-    private _aws: AwsService
+    private _aws: AwsService,
+    private _camera: Camera,
+    private _platform: Platform,
+    private _renderer:Renderer
     ) {}
 
+
   /**
-   * Login to upload the file
+   * Upload Photo button clicked
+   * - On Native device, load native camera/gallery
+   * - On Browser, trigger a click on the html file input
    */
-  uploadFile($event){
+  uploadBtnClicked(){
+    if(this._platform.is("cordova")){
+      this.selectFileFromCamera();
+    }else{
+      // Trigger click event on regular HTML file input
+      let event = new MouseEvent('click', {bubbles: true});
+      this._renderer.invokeElementMethod(
+          this.fileInput.nativeElement, 'dispatchEvent', [event]);
+    }
+  }
+
+  selectFileFromCamera(){
+    const options: CameraOptions = {
+      quality: 100,
+      allowEdit: true,
+      destinationType: this._camera.DestinationType.FILE_URI,
+      encodingType: this._camera.EncodingType.JPEG,
+      mediaType: this._camera.MediaType.PICTURE
+    };
+
+    this._camera.getPicture(options).then((imageData) => {
+        console.log(imageData);
+      }, (err) => {
+        console.log(err);
+    });
+  }
+
+  /**
+   * Upload the selected file through regular HTML file input 
+   * This method will only be called if the target is not a cordova app.
+   */
+  uploadFileViaHtmlFileInput($event){
     let fileList: FileList = $event.target.files;
 
     // Check if files available
@@ -52,7 +92,6 @@ export class HomePage {
           newUpload.status = "complete";
         });
     }
-    
   }
 
 }

@@ -15,12 +15,6 @@
   <hr/>
 
   <ion-list>
-    <ion-item>
-      <input type='file' (change)="uploadFile($event)"/>
-    </ion-item>
-  </ion-list>
-
-  <ion-list>
     <ion-item *ngFor="let upload of uploads">
       {{ upload.name }} <br/>
       {{ upload.status }} <br/>
@@ -42,3 +36,10 @@
 
   
 </ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <input style='display:none;' type='file' #fileInput (change)="uploadFileViaHtmlFileInput($event)"/>
+    <button ion-button block (click)="uploadBtnClicked()">Upload Photo</button>
+  </ion-toolbar>
+</ion-footer>
