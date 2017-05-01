@@ -34,7 +34,7 @@ export class HomePage {
       let file: File = fileList.item(0);
       console.log(file.name);
 
-      this._aws.uploadFile("test", file, (data) => {
+      this._aws.uploadFile("filepref", file, (data) => {
         this.uploadedFileData = data;
       });
     }

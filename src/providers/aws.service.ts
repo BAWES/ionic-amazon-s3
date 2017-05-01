@@ -43,13 +43,15 @@ export class AwsService {
             ContentType: file.type //(String) A standard MIME type describing the format of the object file
         }
 
-        s3.upload(params, (err, data) => {
-            if(err) console.log("S3 upload error", err);
-            else {
-                console.log("S3 upload complete");
-                callback(data);
-            }
-        });
+        s3.upload(params).on('httpUploadProgress', (progress) => {
+                console.log(progress);
+            }).send((err, data) => {
+                if(err) console.log("S3 upload error", err);
+                else {
+                    console.log("S3 upload complete");
+                    callback(data);
+                }
+            });
     }
 
     /**
