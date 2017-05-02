@@ -42,7 +42,7 @@
 
 <ion-footer>
   <ion-toolbar>
-    <input style='display:none;' type='file' #fileInput (change)="uploadFileViaHtmlFileInput($event)"/>
+    <input style='display:none;' type='file' #fileInput (change)="uploadFileViaHtmlFileInput($event)" accept="image/*"/>
     <button ion-button block (click)="uploadBtnClicked()">Upload Photo</button>
   </ion-toolbar>
 </ion-footer>

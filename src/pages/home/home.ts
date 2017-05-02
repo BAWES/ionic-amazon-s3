@@ -12,9 +12,9 @@ import { AwsService } from '../../providers/aws.service'
 export class HomePage {
   @ViewChild('fileInput') fileInput:ElementRef;
 
-  public bucketUrl = "https://bawes-public.s3.eu-west-2.amazonaws.com/";
-
-  public uploads = [];
+  public bucketUrl = "https://bawes-public.s3.eu-west-2.amazonaws.com/"; // Used for link generation after upload
+  public cameraOptions: CameraOptions; // Default settings for camera app 
+  public uploads = []; // List of uploads to display in this app
 
   constructor(
     public navCtrl: NavController,
@@ -22,8 +22,34 @@ export class HomePage {
     private _camera: Camera,
     private _platform: Platform,
     private _renderer:Renderer
-    ) {}
+  ) {
+    // Set Default Camera Options
+    this.setCameraOptions();
+  }
 
+  /**
+   * Sets camera options based on the device plugin support
+   */
+  setCameraOptions(){
+    this.cameraOptions = {
+      quality: 100,
+      allowEdit: true,
+      destinationType: this._camera.DestinationType.FILE_URI,
+      encodingType: this._camera.EncodingType.JPEG,
+      mediaType: this._camera.MediaType.PICTURE
+    };
+
+    if(this._platform.is("android")){
+      this.cameraOptions = {
+        quality: 100,
+        allowEdit: false,
+        destinationType: this._camera.DestinationType.FILE_URI,
+        encodingType: this._camera.EncodingType.JPEG,
+        mediaType: this._camera.MediaType.PICTURE,
+        correctOrientation: true
+      };
+    }
+  }
 
   /**
    * Upload Photo button clicked
@@ -41,17 +67,31 @@ export class HomePage {
     }
   }
 
+  /**
+   * Loads Camera to select file
+   */
   selectFileFromCamera(){
-    const options: CameraOptions = {
-      quality: 100,
-      allowEdit: true,
-      destinationType: this._camera.DestinationType.FILE_URI,
-      encodingType: this._camera.EncodingType.JPEG,
-      mediaType: this._camera.MediaType.PICTURE
-    };
-
-    this._camera.getPicture(options).then((imageData) => {
+    this._camera.getPicture(this.cameraOptions).then((imageData) => {
         console.log(imageData);
+
+        // Resolve File Path on System 
+        // window.resolveLocalFileSystemURL('file://' + imageData, (fileEntry) => {
+
+        // })
+
+        // let file: File;
+        // var reader  = new FileReader();
+        // reader.onloadend = function () {
+        //   let blob = reader.result; //this is an ArrayBuffer
+        //   var file = new File([blob], 'cameraphoto.jpg', {
+        //       //lastModified: new Date(), // optional - default = now
+        //       type: "image/jpeg" // optional - default = ''
+        //   });
+
+        //   console.log(JSON.stringify(file));
+        // }
+        // reader.readAsArrayBuffer(imageData);
+
       }, (err) => {
         console.log(err);
     });
