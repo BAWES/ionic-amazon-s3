@@ -2,9 +2,9 @@ import { Component, Renderer, ElementRef, ViewChild } from '@angular/core';
 import { NavController, Platform } from 'ionic-angular';
 
 import { Camera, CameraOptions } from '@ionic-native/camera';
-import { File } from '@ionic-native/file';
+import { File, Entry, FileEntry } from '@ionic-native/file';
 
-import { AwsService } from '../../providers/aws.service'
+import { AwsService } from '../../providers/aws.service';
 
 @Component({
   selector: 'page-home',
@@ -77,32 +77,24 @@ export class HomePage {
         console.log(imageData);
 
         // Resolve File Path on System 
-        this._file.resolveLocalFilesystemUrl(imageData).then(resolved => {
-          console.log(JSON.stringify(resolved));
+        this._file.resolveLocalFilesystemUrl(imageData).then((entry: Entry) => {
+          // Convert entry into File Entry which can output a JS File object
+          let fileEntry =  entry as FileEntry;
+
+          // Return a File object that represents the current state of the file that this FileEntry represents
+          fileEntry.file((file) => {
+            // Upload The File
+            this.processFileUpload(file);
+          }, (error) => {
+            alert("Unable to retrieve file properties: " + error.code)
+          });
         }).catch(err => { 
-          console.log("Error resolving file") 
+          alert("Error resolving file") 
         });
 
-        // Resolve File Path on System 
-        // window.resolveLocalFileSystemURL('file://' + imageData, (fileEntry) => {
-
-        // })
-
-        // let file: File;
-        // var reader  = new FileReader();
-        // reader.onloadend = function () {
-        //   let blob = reader.result; //this is an ArrayBuffer
-        //   var file = new File([blob], 'cameraphoto.jpg', {
-        //       //lastModified: new Date(), // optional - default = now
-        //       type: "image/jpeg" // optional - default = ''
-        //   });
-
-        //   console.log(JSON.stringify(file));
-        // }
-        // reader.readAsArrayBuffer(imageData);
-
       }, (err) => {
-        console.log(err);
+        // Error getting picture
+        alert(JSON.stringify(err));
     });
   }
 
@@ -116,31 +108,40 @@ export class HomePage {
     // Check if files available
     if(fileList.length > 0){
       let file = fileList.item(0);
-
-      let newUpload = {
-        name: file.name,
-        status: "uploading",
-        loaded: 0,
-        total: file.size,
-        link: ''
-      };
-      this.uploads.push(newUpload);
-
-      this._aws.uploadFile("filepref", file).subscribe((progress) => {
-          //console.log(progress);
-          newUpload.status = "uploading";
-          newUpload.loaded = progress.loaded;
-          newUpload.total = progress.total;
-          newUpload.name = progress.key? progress.key : progress.Key; // If Multipart upload (big file), Key with capital "K"
-          newUpload.link = this.bucketUrl + newUpload.name;
-        }, err => {
-          //console.log("Error", err);
-          newUpload.status = "error";
-        }, () => {
-          //console.log("Done uploading? Completed");
-          newUpload.status = "complete";
-        });
+      // Upload The File
+      this.processFileUpload(file);
     }
+  }
+
+
+  /**
+   * Takes a JS File object for upload to S3
+   */
+  processFileUpload(file){
+    let newUpload = {
+      name: file.name,
+      status: "uploading",
+      loaded: 0,
+      total: file.size,
+      link: ''
+    };
+    this.uploads.push(newUpload);
+    console.log(JSON.stringify(this.uploads));
+
+    this._aws.uploadFile("filepref", file).subscribe((progress) => {
+      console.log(JSON.stringify(progress));
+      newUpload.status = "uploading";
+      newUpload.loaded = progress.loaded;
+      newUpload.total = progress.total;
+      newUpload.name = progress.key? progress.key : progress.Key; // If Multipart upload (big file), Key with capital "K"
+      newUpload.link = this.bucketUrl + newUpload.name;
+    }, err => {
+      console.log("Error", err);
+      newUpload.status = "error";
+    }, () => {
+      console.log("Done uploading? Completed");
+      newUpload.status = "complete";
+    });
   }
 
 }
