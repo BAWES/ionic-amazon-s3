@@ -88,4 +88,5 @@
     <variable name="CAMERA_USAGE_DESCRIPTION" value="Required for photo uploads"/>
     <variable name="PHOTOLIBRARY_USAGE_DESCRIPTION" value="Required for image uploads"/>
   </plugin>
+  <plugin name="cordova-plugin-file" spec="~4.3.3"/>
 </widget>

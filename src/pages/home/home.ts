@@ -2,6 +2,7 @@ import { Component, Renderer, ElementRef, ViewChild } from '@angular/core';
 import { NavController, Platform } from 'ionic-angular';
 
 import { Camera, CameraOptions } from '@ionic-native/camera';
+import { File } from '@ionic-native/file';
 
 import { AwsService } from '../../providers/aws.service'
 
@@ -20,6 +21,7 @@ export class HomePage {
     public navCtrl: NavController,
     private _aws: AwsService,
     private _camera: Camera,
+    private _file: File,
     private _platform: Platform,
     private _renderer:Renderer
   ) {
@@ -75,6 +77,13 @@ export class HomePage {
         console.log(imageData);
 
         // Resolve File Path on System 
+        this._file.resolveLocalFilesystemUrl(imageData).then(resolved => {
+          console.log(JSON.stringify(resolved));
+        }).catch(err => { 
+          console.log("Error resolving file") 
+        });
+
+        // Resolve File Path on System 
         // window.resolveLocalFileSystemURL('file://' + imageData, (fileEntry) => {
 
         // })
@@ -106,7 +115,7 @@ export class HomePage {
 
     // Check if files available
     if(fileList.length > 0){
-      let file: File = fileList.item(0);
+      let file = fileList.item(0);
 
       let newUpload = {
         name: file.name,
