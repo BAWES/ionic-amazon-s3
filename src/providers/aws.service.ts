@@ -30,10 +30,12 @@ export class AwsService {
      * @param  {any} callback
      * @returns {Observable<any>}
      */
-    uploadFile(file_prefix: string, file): Observable<any> {
+    uploadFile(file_prefix: string, file: File): Observable<any> {
         let s3 = new AWS.S3({
             apiVersion: '2006-03-01'
         });
+
+        console.log("File to upload: "+ JSON.stringify(file));
 
         let params = {
             Body: file, // the actual file file
