@@ -73,12 +73,10 @@ export class HomePage {
    * Loads Camera to select file
    */
   selectFileFromCamera(){
-    this._camera.getPicture(this.cameraOptions).then((imageData) => {
-        //console.log(imageData);
-        let nativeFilePath = imageData;
+    this._camera.getPicture(this.cameraOptions).then((imageFilePath) => {
 
         // Resolve File Path on System 
-        this._file.resolveLocalFilesystemUrl(imageData).then((entry: Entry) => {
+        this._file.resolveLocalFilesystemUrl(imageFilePath).then((entry: Entry) => {
           // Convert entry into File Entry which can output a JS File object
           let fileEntry =  entry as FileEntry;
           console.log(JSON.stringify(fileEntry));
@@ -90,25 +88,20 @@ export class HomePage {
             // Store File Details for later use
             let fileName = file.name;
             let fileType = file.type;
-            let fileSize = file.size;
             let fileLastModified = file.lastModifiedDate;
 
-            // Read File as Array Buffer
+            // Read File as Array Buffer, Convert to Blob, then to JS File
             var reader = new FileReader();
             reader.onloadend = (event: any) => {
-                console.log("Successful file write: " + event.target.result);
-                // displayFileData(fileEntry.fullPath + ": " + this.result);
+                var blob = new Blob([new Uint8Array(event.target.result)], { type: fileType });
+                var file: any = blob;
+                file.name = fileName;
+                file.lastModifiedDate = fileLastModified;
 
-                // var blob = new Blob([new Uint8Array(this.result)], { type: fileType });
-                // this.processFileUpload(blob);
-                // displayImage(blob);
+                // Send to S3 for File Uploading
+                this.processFileUpload(file);
             };
             reader.readAsArrayBuffer(file);
-
-
-
-            // Upload The File
-            // this.processFileUpload(file);
 
           }, (error) => {
             alert("Unable to retrieve file properties: " + error.code)
