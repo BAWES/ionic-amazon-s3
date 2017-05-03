@@ -35,8 +35,6 @@ export class AwsService {
             apiVersion: '2006-03-01'
         });
 
-        console.log("File to upload: "+ JSON.stringify(file));
-
         let params = {
             Body: file, // the actual file file
             ACL: "public-read", // to allow public access to the file
@@ -47,7 +45,7 @@ export class AwsService {
 
         return Observable.create((observer: Observer<any>) => {
             s3.upload(params).on('httpUploadProgress', (progress: ProgressEvent) => {
-                // console.log(progress);
+                // console.log("AWS Progress: "+ JSON.stringify(progress));
                 observer.next(progress);
             }).send((err, data) => {
                 if(err) {

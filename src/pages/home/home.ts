@@ -1,4 +1,4 @@
-import { Component, Renderer, ElementRef, ViewChild } from '@angular/core';
+import { Component, Renderer, ElementRef, ViewChild, NgZone } from '@angular/core';
 import { NavController, Platform } from 'ionic-angular';
 
 import { Camera, CameraOptions } from '@ionic-native/camera';
@@ -23,7 +23,8 @@ export class HomePage {
     private _camera: Camera,
     private _file: NativeFile,
     private _platform: Platform,
-    private _renderer:Renderer
+    private _renderer:Renderer,
+    private _zone: NgZone
   ) {
     // Set Default Camera Options
     this.setCameraOptions();
@@ -144,24 +145,32 @@ export class HomePage {
       link: ''
     };
     this.uploads.push(newUpload);
-    //console.log(JSON.stringify(this.uploads));
 
+    // Process Uploads
     this._aws.uploadFile("filepref", file).subscribe((progress) => {
-      console.log(JSON.stringify(progress));
-      // If Progress has a loaded value, update progress
-      if(progress.loaded){
-          newUpload.status = "uploading";
-          newUpload.loaded = progress.loaded;
-          newUpload.total = progress.total;
-          newUpload.name = progress.key? progress.key : progress.Key; // If Multipart upload (big file), Key with capital "K"
-          newUpload.link = this.bucketUrl + newUpload.name;
-      }
-    }, err => {
-      console.log("Error", err);
-      newUpload.status = "error";
+
+      // Run in zone to trigger change detection
+      this._zone.run(() => {
+        // If Progress has a loaded value, update progress
+        if(progress.loaded &&  progress.loaded != progress.total){
+            newUpload.status = "uploading";
+            newUpload.loaded = progress.loaded;
+            newUpload.total = progress.total;
+            newUpload.name = progress.key? progress.key : progress.Key; // If Multipart upload (big file), Key with capital "K"
+            newUpload.link = this.bucketUrl + newUpload.name;
+        }
+      });
+      
+    }, (err) => {
+      // console.log("Error", err);
+      this._zone.run(() => {
+        newUpload.status = "error";
+      });
     }, () => {
-      console.log("Done uploading / Completed");
-      newUpload.status = "complete";
+      // console.log("Done uploading / Completed");
+      this._zone.run(() => {
+        newUpload.status = "complete";
+      });
     });
   }
 
