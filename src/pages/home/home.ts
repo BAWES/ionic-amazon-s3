@@ -80,11 +80,9 @@ export class HomePage {
         this._file.resolveLocalFilesystemUrl(imageFilePath).then((entry: Entry) => {
           // Convert entry into File Entry which can output a JS File object
           let fileEntry =  entry as FileEntry;
-          console.log(JSON.stringify(fileEntry));
 
           // Return a File object that represents the current state of the file that this FileEntry represents
           fileEntry.file((file: any) => {
-            console.log(JSON.stringify(file));
 
             // Store File Details for later use
             let fileName = file.name;
