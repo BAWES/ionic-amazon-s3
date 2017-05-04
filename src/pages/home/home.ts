@@ -25,7 +25,12 @@ export class HomePage {
     private _platform: Platform,
     private _renderer:Renderer,
     private _zone: NgZone
-  ) {}
+  ) {
+    // Cleanup Temporary Camera Files on iOS on app load
+    if(this._platform.is('ios')){
+      this._camera.cleanup();
+    }
+  }
 
 
   /**
