@@ -65,8 +65,7 @@ export class HomePage {
     }else{
       // Trigger click event on regular HTML file input
       let event = new MouseEvent('click', {bubbles: true});
-      this._renderer.invokeElementMethod(
-          this.fileInput.nativeElement, 'dispatchEvent', [event]);
+      this._renderer.invokeElementMethod(this.fileInput.nativeElement, 'dispatchEvent', [event]);
     }
   }
 
@@ -76,42 +75,49 @@ export class HomePage {
   selectFileFromCamera(){
     this._camera.getPicture(this.cameraOptions).then((imageFilePath) => {
 
-        // Resolve File Path on System 
-        this._file.resolveLocalFilesystemUrl(imageFilePath).then((entry: Entry) => {
-          // Convert entry into File Entry which can output a JS File object
-          let fileEntry =  entry as FileEntry;
-
-          // Return a File object that represents the current state of the file that this FileEntry represents
-          fileEntry.file((file: any) => {
-
-            // Store File Details for later use
-            let fileName = file.name;
-            let fileType = file.type;
-            let fileLastModified = file.lastModifiedDate;
-
-            // Read File as Array Buffer, Convert to Blob, then to JS File
-            var reader = new FileReader();
-            reader.onloadend = (event: any) => {
-                var blob = new Blob([new Uint8Array(event.target.result)], { type: fileType });
-                var file: any = blob;
-                file.name = fileName;
-                file.lastModifiedDate = fileLastModified;
-
-                // Send to S3 for File Uploading
-                this.processFileUpload(file);
-            };
-            reader.readAsArrayBuffer(file);
-
-          }, (error) => {
-            alert("Unable to retrieve file properties: " + error.code)
-          });
-        }).catch(err => { 
-          alert("Error resolving file") 
-        });
+        this.uploadFromNativePath(imageFilePath);
 
       }, (err) => {
         // Error getting picture
         alert(JSON.stringify(err));
+    });
+  }
+
+  /**
+   * Prepare the file from native filesystem then send for upload to S3
+   */
+  uploadFromNativePath(nativeFilePath){
+    // Resolve File Path on System 
+    this._file.resolveLocalFilesystemUrl(nativeFilePath).then((entry: Entry) => {
+      // Convert entry into File Entry which can output a JS File object
+      let fileEntry =  entry as FileEntry;
+
+      // Return a File object that represents the current state of the file that this FileEntry represents
+      fileEntry.file((file: any) => {
+
+        // Store File Details for later use
+        let fileName = file.name;
+        let fileType = file.type;
+        let fileLastModified = file.lastModifiedDate;
+
+        // Read File as Array Buffer, Convert to Blob, then to JS File
+        var reader = new FileReader();
+        reader.onloadend = (event: any) => {
+            var blob = new Blob([new Uint8Array(event.target.result)], { type: fileType });
+            var file: any = blob;
+            file.name = fileName;
+            file.lastModifiedDate = fileLastModified;
+
+            // Send to S3 for File Uploading
+            this.processFileUpload(file);
+        };
+        reader.readAsArrayBuffer(file);
+
+      }, (error) => {
+        alert("Unable to retrieve file properties: " + error.code)
+      });
+    }).catch(err => { 
+      alert("Error resolving file") 
     });
   }
 
