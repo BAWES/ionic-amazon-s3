@@ -1,6 +1,8 @@
 import { Injectable } from "@angular/core";
 import { Observable, Observer } from 'rxjs/rx';
 
+import { File as NativeFile, Entry, FileEntry }  from '@ionic-native/file';
+
 declare var AWS;
 
 @Injectable()
@@ -10,7 +12,7 @@ export class AwsService {
     private _secret_access_key = "FQLdTG54XkI7SBRIcCDe0z6tA21G+zzqDg8ucSY7";
     private _bucket_name = "bawes-public";
 
-    constructor(){
+    constructor(private _file: NativeFile){
         this.initAwsService();
     }
 
@@ -21,6 +23,51 @@ export class AwsService {
         AWS.config.region = this._region;
         AWS.config.accessKeyId = this._access_key_id;
         AWS.config.secretAccessKey = this._secret_access_key;
+    }
+
+    /**
+     * Files available in native filesystem need additional processing
+     * before they are ready to be uploaded to S3. This function will create
+     * a JS File blob that is ready to be accepted via AWS S3 SDK.
+     * @param  {string} file_prefix
+     * @param  {any} nativeFilePath
+     * @returns {Observable<any>}
+     */
+    uploadNativePath(file_prefix: string, nativeFilePath): Observable<any>{
+        // Resolve File Path on System 
+        this._file.resolveLocalFilesystemUrl(nativeFilePath).then((entry: Entry) => {
+            // Convert entry into File Entry which can output a JS File object
+            let fileEntry =  entry as FileEntry;
+
+            // Return a File object that represents the current state of the file that this FileEntry represents
+            fileEntry.file((file: any) => {
+
+                // Store File Details for later use
+                let fileName = file.name;
+                let fileType = file.type;
+                let fileLastModified = file.lastModifiedDate;
+
+                // Read File as Array Buffer, Convert to Blob, then to JS File
+                var reader = new FileReader();
+                reader.onloadend = (event: any) => {
+                    var blob = new Blob([new Uint8Array(event.target.result)], { type: fileType });
+                    var file: any = blob;
+                    file.name = fileName;
+                    file.lastModifiedDate = fileLastModified;
+
+                    // Send for File Uploading
+                    return this.uploadFile(file_prefix, file);
+                };
+                reader.readAsArrayBuffer(file);
+
+            }, (error) => {
+                return Observable.throw(new Error("Unable to retrieve file properties: " + error.code));
+            });
+        }).catch(err => { 
+            return Observable.throw(new Error("Error resolving file"));
+        });
+
+        return Observable.throw(new Error("Unable to resolve native file"));
     }
 
     /**
