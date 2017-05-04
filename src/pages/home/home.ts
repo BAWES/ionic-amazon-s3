@@ -14,7 +14,6 @@ export class HomePage {
   @ViewChild('fileInput') fileInput:ElementRef;
 
   public bucketUrl = "https://bawes-public.s3.eu-west-2.amazonaws.com/"; // Used for link generation after upload
-  public cameraOptions: CameraOptions; // Default settings for camera app 
   public uploads = []; // List of uploads to display in this app
 
   constructor(
@@ -67,11 +66,9 @@ export class HomePage {
    * Loads Camera to select file
    */
   selectNativeFileFromSource(sourceType){
-    // Set Default Camera Options
-    this._setCameraOptions(sourceType);
-  
     // Get picture from selected source
-    this._camera.getPicture(this.cameraOptions).then((imageFilePath) => {
+    let cameraOptions = this._getCameraOptions(sourceType);
+    this._camera.getPicture(cameraOptions).then((imageFilePath) => {
         // Upload the photo stored in native path
         this.uploadFromNativePath(imageFilePath);
       }, (err) => {
@@ -181,21 +178,13 @@ export class HomePage {
   }
 
   /**
-   * Sets camera options based on the device plugin support
+   * Gets camera options based on the device plugin support
    * @param  {} sourceType
+   * @returns CameraOptions
    */
-  private _setCameraOptions(sourceType){
-    this.cameraOptions = {
-      quality: 100,
-      sourceType: sourceType,
-      allowEdit: true,
-      destinationType: this._camera.DestinationType.FILE_URI,
-      encodingType: this._camera.EncodingType.JPEG,
-      mediaType: this._camera.MediaType.PICTURE
-    };
-
+  private _getCameraOptions(sourceType): CameraOptions{
     if(this._platform.is("android")){
-      this.cameraOptions = {
+      return {
         quality: 100,
         sourceType: sourceType,
         allowEdit: false,
@@ -205,6 +194,15 @@ export class HomePage {
         correctOrientation: true
       };
     }
+
+    return {
+      quality: 100,
+      sourceType: sourceType,
+      allowEdit: true,
+      destinationType: this._camera.DestinationType.FILE_URI,
+      encodingType: this._camera.EncodingType.JPEG,
+      mediaType: this._camera.MediaType.PICTURE
+    };
   }
 
 }
