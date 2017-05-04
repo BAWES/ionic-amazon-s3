@@ -1,5 +1,5 @@
 import { Component, Renderer, ElementRef, ViewChild, NgZone } from '@angular/core';
-import { NavController, Platform } from 'ionic-angular';
+import { NavController, Platform, ActionSheetController } from 'ionic-angular';
 
 import { Camera, CameraOptions } from '@ionic-native/camera';
 import { File as NativeFile, Entry, FileEntry }  from '@ionic-native/file';
@@ -19,40 +19,15 @@ export class HomePage {
 
   constructor(
     public navCtrl: NavController,
+    private _actionSheetCtrl: ActionSheetController,
     private _aws: AwsService,
     private _camera: Camera,
     private _file: NativeFile,
     private _platform: Platform,
     private _renderer:Renderer,
     private _zone: NgZone
-  ) {
-    // Set Default Camera Options
-    this.setCameraOptions();
-  }
+  ) {}
 
-  /**
-   * Sets camera options based on the device plugin support
-   */
-  setCameraOptions(){
-    this.cameraOptions = {
-      quality: 100,
-      allowEdit: true,
-      destinationType: this._camera.DestinationType.FILE_URI,
-      encodingType: this._camera.EncodingType.JPEG,
-      mediaType: this._camera.MediaType.PICTURE
-    };
-
-    if(this._platform.is("android")){
-      this.cameraOptions = {
-        quality: 100,
-        allowEdit: false,
-        destinationType: this._camera.DestinationType.FILE_URI,
-        encodingType: this._camera.EncodingType.JPEG,
-        mediaType: this._camera.MediaType.PICTURE,
-        correctOrientation: true
-      };
-    }
-  }
 
   /**
    * Upload Photo button clicked
@@ -61,7 +36,26 @@ export class HomePage {
    */
   uploadBtnClicked(){
     if(this._platform.is("cordova")){
-      this.selectFileFromCamera();
+      // Display action sheet giving user option of camera vs local filesystem.
+      let actionSheet = this._actionSheetCtrl.create({
+        title: "Select image source",
+        buttons: [
+          {
+            text: 'Load from Library',
+            handler: () => {
+              this.selectNativeFileFromSource(this._camera.PictureSourceType.PHOTOLIBRARY);
+            }
+          },
+          {
+            text: 'Use Camera',
+            handler: () => {
+              this.selectNativeFileFromSource(this._camera.PictureSourceType.CAMERA);
+            }
+          }
+        ]
+      });
+      actionSheet.present();
+
     }else{
       // Trigger click event on regular HTML file input
       let event = new MouseEvent('click', {bubbles: true});
@@ -72,11 +66,14 @@ export class HomePage {
   /**
    * Loads Camera to select file
    */
-  selectFileFromCamera(){
+  selectNativeFileFromSource(sourceType){
+    // Set Default Camera Options
+    this._setCameraOptions(sourceType);
+  
+    // Get picture from selected source
     this._camera.getPicture(this.cameraOptions).then((imageFilePath) => {
-
+        // Upload the photo stored in native path
         this.uploadFromNativePath(imageFilePath);
-
       }, (err) => {
         // Error getting picture
         alert(JSON.stringify(err));
@@ -160,9 +157,14 @@ export class HomePage {
             newUpload.status = "uploading";
             newUpload.loaded = progress.loaded;
             newUpload.total = progress.total;
-            newUpload.name = progress.key? progress.key : progress.Key; // If Multipart upload (big file), Key with capital "K"
-            newUpload.link = this.bucketUrl + newUpload.name;
         }
+
+        // If Multipart upload (big file), Key with capital "K"
+        if(progress.key || progress.Key){
+          newUpload.name = progress.key? progress.key : progress.Key; 
+          newUpload.link = this.bucketUrl + newUpload.name;
+        }
+
       });
       
     }, (err) => {
@@ -176,6 +178,33 @@ export class HomePage {
         newUpload.status = "complete";
       });
     });
+  }
+
+  /**
+   * Sets camera options based on the device plugin support
+   * @param  {} sourceType
+   */
+  private _setCameraOptions(sourceType){
+    this.cameraOptions = {
+      quality: 100,
+      sourceType: sourceType,
+      allowEdit: true,
+      destinationType: this._camera.DestinationType.FILE_URI,
+      encodingType: this._camera.EncodingType.JPEG,
+      mediaType: this._camera.MediaType.PICTURE
+    };
+
+    if(this._platform.is("android")){
+      this.cameraOptions = {
+        quality: 100,
+        sourceType: sourceType,
+        allowEdit: false,
+        destinationType: this._camera.DestinationType.FILE_URI,
+        encodingType: this._camera.EncodingType.JPEG,
+        mediaType: this._camera.MediaType.PICTURE,
+        correctOrientation: true
+      };
+    }
   }
 
 }
