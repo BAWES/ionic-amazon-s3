@@ -12,7 +12,7 @@ export class CameraService {
     ){
         // Cleanup Temporary Camera Files on iOS on app load
         if(this._platform.is('ios')){
-        this._camera.cleanup();
+            this._camera.cleanup();
         }
     }
 

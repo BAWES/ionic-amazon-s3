@@ -41,18 +41,14 @@ export class HomePage {
             handler: () => {
               this._cameraService.getImageFromLibrary().then((nativeImageFilePath) => {
 
-                  // Create Transfer Record for Display 
-                  let newUpload = {
-                    name: "Preparing file for upload",
-                    status: "uploading",
-                    loaded: 0,
-                    total: 100,
-                    link: ''
-                  };
-                  this.uploads.push(newUpload);
                   // Upload and process for progress
-                  let uploadObservable = this._awsService.uploadNativePath("camera", nativeImageFilePath);
-                  this.processFileUpload(uploadObservable, newUpload);
+                  this._awsService.uploadNativePath("library", nativeImageFilePath)
+                    .then((uploadObservable) => {
+                      this.processFileUpload(uploadObservable);
+                    })
+                    .catch((err) => {
+                      alert(err);
+                    });
 
               }, (err) => {
                   // Error getting picture
@@ -66,21 +62,14 @@ export class HomePage {
             handler: () => {
               this._cameraService.getImageFromCamera().then((nativeImageFilePath) => {
 
-
-                  // Create Transfer Record for Display 
-                  let newUpload = {
-                    name: "Preparing file for upload",
-                    status: "uploading",
-                    loaded: 0,
-                    total: 100,
-                    link: ''
-                  };
-                  this.uploads.push(newUpload);
                   // Upload and process for progress
-                  let uploadObservable = this._awsService.uploadNativePath("camera", nativeImageFilePath);
-                  this.processFileUpload(uploadObservable, newUpload);
-
-
+                  this._awsService.uploadNativePath("camera", nativeImageFilePath)
+                    .then((uploadObservable) => {
+                      this.processFileUpload(uploadObservable);
+                    })
+                    .catch((err) => {
+                      alert(err);
+                    });
 
               }, (err) => {
                   // Error getting picture
@@ -111,19 +100,9 @@ export class HomePage {
     if(fileList.length > 0){
       let file = fileList.item(0);
 
-      // Create Transfer Record for Display 
-      let newUpload = {
-        name: file.name,
-        status: "uploading",
-        loaded: 0,
-        total: file.size,
-        link: ''
-      };
-      this.uploads.push(newUpload);
-
       // Upload The File
-      let uploadObservable = this._awsService.uploadFile("browserpref", file);
-      this.processFileUpload(uploadObservable, newUpload);
+      let uploadObservable = this._awsService.uploadFile("browser", file);
+      this.processFileUpload(uploadObservable);
     }
   }
 
@@ -131,7 +110,17 @@ export class HomePage {
   /**
    * Takes a JS File object for upload to S3
    */
-  processFileUpload(uploadObservable, newUpload){
+  processFileUpload(uploadObservable){
+
+    // Create Transfer Record for Display 
+    let newUpload = {
+      name: "Preparing file for upload",
+      status: "uploading",
+      loaded: 0,
+      total: 100,
+      link: ''
+    };
+    this.uploads.push(newUpload);
     
 
     // Process Uploads
@@ -155,7 +144,7 @@ export class HomePage {
       // });
       
     }, (err) => {
-      // console.log("Error", err);
+      console.log("Error", err);
       // this._zone.run(() => {
         newUpload.status = "error";
       // });
