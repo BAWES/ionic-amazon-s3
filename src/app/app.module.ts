@@ -10,6 +10,7 @@ import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 
 import { AwsService } from '../providers/aws.service';
+import { CameraService } from '../providers/camera.service';
 
 @NgModule({
   declarations: [
@@ -27,6 +28,7 @@ import { AwsService } from '../providers/aws.service';
   ],
   providers: [
     AwsService,
+    CameraService,
     StatusBar,
     SplashScreen,
     Camera,
