@@ -1,4 +1,4 @@
-import { Component, Renderer, ElementRef, ViewChild, NgZone } from '@angular/core';
+import { Component, Renderer, ElementRef, ViewChild } from '@angular/core';
 import { NavController, Platform, ActionSheetController } from 'ionic-angular';
 
 // Services
@@ -21,8 +21,7 @@ export class HomePage {
     private _awsService: AwsService,
     private _cameraService: CameraService,
     private _platform: Platform,
-    private _renderer:Renderer,
-    private _zone: NgZone
+    private _renderer:Renderer
   ) {}
 
   /**
@@ -111,7 +110,6 @@ export class HomePage {
    * Takes a JS File object for upload to S3
    */
   processFileUpload(uploadObservable){
-
     // Create Transfer Record for Display 
     let newUpload = {
       name: "Preparing file for upload",
@@ -121,38 +119,26 @@ export class HomePage {
       link: ''
     };
     this.uploads.push(newUpload);
-    
 
-    // Process Uploads
+    // Process Upload and Display Progress
     uploadObservable.subscribe((progress) => {
+      if(progress.loaded &&  progress.loaded != progress.total){
+          newUpload.status = "uploading";
+          newUpload.loaded = progress.loaded;
+          newUpload.total = progress.total;
+      }
 
-      // Run in zone to trigger change detection
-      // this._zone.run(() => {
-        // If Progress has a loaded value, update progress
-        if(progress.loaded &&  progress.loaded != progress.total){
-            newUpload.status = "uploading";
-            newUpload.loaded = progress.loaded;
-            newUpload.total = progress.total;
-        }
+      // If Multipart upload (big file), Key with capital "K"
+      if(progress.key || progress.Key){
+        newUpload.name = progress.key? progress.key : progress.Key; 
+        newUpload.link = this.bucketUrl + newUpload.name;
+      }
 
-        // If Multipart upload (big file), Key with capital "K"
-        if(progress.key || progress.Key){
-          newUpload.name = progress.key? progress.key : progress.Key; 
-          newUpload.link = this.bucketUrl + newUpload.name;
-        }
-
-      // });
-      
     }, (err) => {
       console.log("Error", err);
-      // this._zone.run(() => {
-        newUpload.status = "error";
-      // });
+      newUpload.status = "error";
     }, () => {
-      // console.log("Done uploading / Completed");
-      // this._zone.run(() => {
-        newUpload.status = "complete";
-      // });
+      newUpload.status = "complete";
     });
   }
 
